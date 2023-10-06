@@ -25,6 +25,7 @@ export class App extends Component {
         this.setState({ loading: true });
 
         const { totalHits, hits } = await getImages(query, page);
+        
 
         if (totalHits === 0) {
           toast.error('Nothing was found for your request');
@@ -40,6 +41,7 @@ export class App extends Component {
               ? totalHits - hits.length
               : totalHits - [...prevState.images, ...hits].length,
         }));
+        toast.success(`Success, found ${totalHits} images`);
 
         this.setState({ loading: false });
       } catch (error) {
@@ -48,9 +50,12 @@ export class App extends Component {
     }
   }
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
+  handleLoadMore = () => {   
+      this.setState(prevState => ({
+        page: prevState.page + 1
+      }));
+    }
+
 
   handleQuerySubmit = query => {
     this.setState({ query, page: 1 });
@@ -59,13 +64,14 @@ export class App extends Component {
   render() {
     const { images, totalHits, loading } = this.state;
     const { handleQuerySubmit, handleLoadMore } = this;
+  
     return (
       <Container className="d-flex justify-content-center flex-column">
         <SearchBar onSubmit={handleQuerySubmit} />
 
         {loading && <Loader/>}
         {images && <ImageGallery images={images} />}
-        {!!totalHits && <ButtonLoadMore onLoadMore={handleLoadMore} />}
+        {!!totalHits && <ButtonLoadMore onLoadMore={handleLoadMore}/>}
 
         <Toaster position="top-right" reverseOrder={false} />
       </Container>
