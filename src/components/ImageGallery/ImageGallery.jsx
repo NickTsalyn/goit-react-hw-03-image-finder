@@ -1,9 +1,8 @@
 import { ImageGalleryItem } from "components/ImageGalleryItem/ImageGalleryItem";
 import { List } from "./ImageGallery.styled";
-import { Button } from "react-bootstrap";
 
 
-export const ImageGallery = ({images, loadMore}) => {
+export const ImageGallery = ({images}) => {
     if (!Array.isArray(images.hits)) {
         return null;
       }
@@ -11,6 +10,5 @@ export const ImageGallery = ({images, loadMore}) => {
         {images.hits.map(image => {
             return(<ImageGalleryItem key={image.id} url={image.webformatURL} modalUrl={image.largeImageURL}/>)
         })}
-         <Button className="mr-auto ml-auto btn" onClick={loadMore}>load more</Button>
   </List>;
 };
