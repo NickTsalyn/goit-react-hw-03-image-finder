@@ -1,8 +1,8 @@
 
 import { Button } from "react-bootstrap"
 
-export const ButtonLoadMore = ({loadMore}) =>{
+export const ButtonLoadMore = ({onLoadMore}) =>{
     return( 
-        <Button className="mr-auto ml-auto btn" onClick={loadMore}>load more</Button>
+        <Button className="mr-auto ml-auto btn" onClick={onLoadMore}>load more</Button>
     )
 }  

@@ -12,93 +12,61 @@ export class App extends Component {
     query: '',
     page: 1,
     images: [],
+    totalHits: 0,
     loading: false,
     error: false,
   };
 
-  handleChange = evt => {
-    this.setState({ query: evt.target.value });
-  };
-
-  handleSubmit = async evt => {
-    evt.preventDefault();
-    const { query } = this.state;
-    const currentQuery = `${Date.now()}/${query}`;
-    this.setState({
-      currentQuery,
-      images: [],
-      page: 1,
-      loading: true,
-      error: false,
-    });
-    console.log(query)
-
-    try {
-      const data = await getImages(query, 1);
-      console.log(data);
-      this.setState({ images: data });
-      if (data.hits.length === 0) {
-        toast.error('Nothing found, try again');
-      }
-      else if(query.trim() === '') {
-        toast.error('Please enter query');
-        this.setState({images: []})
-      } 
-      else {
-        toast.success(`Success, found ${data.totalHits} images`);
-      }
-    } catch {
-      this.setState({ error: true });
-    } finally {
-      this.setState({ loading: false });
-    }
-  };
-
-  loadMore = async () => {
+  async componentDidUpdate(_, prevState) {
     const { query, page } = this.state;
-    this.setState({ loading: true });
 
-    try {
-      const data = await getImages(query, page + 1);
+    if (prevState.query !== query || prevState.page !== page) {
+      try {
+        this.setState({ loading: true });
 
-      this.setState(prevState => ({
-        page: prevState.page + 1,
-        images: {
-          ...prevState.images,
-          hits: [...prevState.images.hits, ...data.hits],
-        },
-      }));
-      // if (data.hits.length >= data.totalHits) {
-      //   toast.error('Reached all requests');
-      // }
-    } catch {
-      this.setState({ error: true });
-      toast.error('Oops, something went wrong');
-    } finally {
-      this.setState({ loading: false });
+        const { totalHits, hits } = await getImages(query, page);
+
+        if (totalHits === 0) {
+          toast.error('Nothing was found for your request');
+          this.setState({ loading: false });
+          return;
+        }
+
+        this.setState(prevState => ({
+          images: page === 1 ? hits : [...prevState.images, ...hits],
+
+          totalHits:
+            page === 1
+              ? totalHits - hits.length
+              : totalHits - [...prevState.images, ...hits].length,
+        }));
+
+        this.setState({ loading: false });
+      } catch (error) {
+        toast.error(`Oops! Something went wrong! ${error}`);
+      }
     }
+  }
+
+  handleLoadMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
+
+  handleQuerySubmit = query => {
+    this.setState({ query, page: 1 });
   };
 
   render() {
-    const { loading, images } = this.state;
-    const allHits = images && images.hits && images.hits.length;
-    if (allHits >= images.totalHits) {
-      toast.error('Reached all requests');
-    }
+    const { images, totalHits, loading } = this.state;
+    const { handleQuerySubmit, handleLoadMore } = this;
     return (
       <Container className="d-flex justify-content-center flex-column">
-        <SearchBar
-          handleChange={this.handleChange}
-          handleSubmit={this.handleSubmit}
-          value={this.state.query}
-        />
-        {loading && Loader}
-        {allHits > 0 && (
-          <>
-            <ImageGallery images={this.state.images} />
-            {(allHits < images.totalHits && <ButtonLoadMore loadMore={this.loadMore} />)}
-          </>
-        )}
+        <SearchBar onSubmit={handleQuerySubmit} />
+
+        {loading && <Loader/>}
+        {images && <ImageGallery images={images} />}
+        {!!totalHits && <ButtonLoadMore onLoadMore={handleLoadMore} />}
+
         <Toaster position="top-right" reverseOrder={false} />
       </Container>
     );
