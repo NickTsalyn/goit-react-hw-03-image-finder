@@ -15,17 +15,17 @@ export class App extends Component {
     totalHits: 0,
     loading: false,
     error: false,
-    firstLoad: true,
   };
 
   async componentDidUpdate(_, prevState) {
-    const { query, page} = this.state;
+    const { query, page } = this.state;
 
     if (prevState.query !== query || prevState.page !== page) {
       try {
-        this.setState({ loading: true, firstLoad: false });
+        this.setState({ loading: true });
 
         const { totalHits, hits } = await getImages(query, page);
+        
 
         if (totalHits === 0) {
           toast.error('Nothing was found for your request');
@@ -50,31 +50,29 @@ export class App extends Component {
     }
   }
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
+  handleLoadMore = () => {   
+      this.setState(prevState => ({
+        page: prevState.page + 1
+      }));
+    }
+
 
   handleQuerySubmit = query => {
     this.setState({ query, page: 1 });
   };
 
   render() {
-    const { images, totalHits, loading, firstLoad } = this.state;
+    const { images, totalHits, loading } = this.state;
     const { handleQuerySubmit, handleLoadMore } = this;
-
+  
     return (
       <Container className="d-flex justify-content-center flex-column">
         <SearchBar onSubmit={handleQuerySubmit} />
 
-        {loading && (
-          <div className={firstLoad ? 'loader-first' : 'loader'}>
-            <Loader />
-          </div>
-        )}
+        {loading && <Loader/>}
         {images && <ImageGallery images={images} />}
-        {totalHits && <ButtonLoadMore onLoadMore={handleLoadMore} />}
+        {!!totalHits && <ButtonLoadMore onLoadMore={handleLoadMore}/>}
+
         <Toaster position="top-right" reverseOrder={false} />
       </Container>
     );

@@ -25,9 +25,3 @@ code {
   top: 50%;
   left: 50%;
 }
-
-.loader-first {
-  position: absolute;
-  left: 50%;
-  bottom: 20px;
-}
