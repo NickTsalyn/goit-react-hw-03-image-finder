@@ -8,6 +8,7 @@ import { Loader } from './Loader/Loader';
 import { ButtonLoadMore } from './Button/Button';
 
 export class App extends Component {
+  
   state = {
     query: '',
     page: 1,
@@ -15,6 +16,7 @@ export class App extends Component {
     totalHits: 0,
     loading: false,
     error: false,
+    loadMore: 0
   };
 
   async componentDidUpdate(_, prevState) {
@@ -23,9 +25,9 @@ export class App extends Component {
     if (prevState.query !== query || prevState.page !== page) {
       try {
         this.setState({ loading: true });
-
-        const { totalHits, hits } = await getImages(query, page);
+       
         
+        const { totalHits, hits } = await getImages(query, page);
 
         if (totalHits === 0) {
           toast.error('Nothing was found for your request');
@@ -40,9 +42,16 @@ export class App extends Component {
             page === 1
               ? totalHits - hits.length
               : totalHits - [...prevState.images, ...hits].length,
-        }));
-        toast.success(`Success, found ${totalHits} images`);
+        }), () => {
+          if(this.state.totalHits === 0) {
+            toast.error("No more requests")
+  
+          }
+        });
+        if(this.state.page === 1) {
+          toast.success(`Success, found ${totalHits} images`);
 
+        }
         this.setState({ loading: false });
       } catch (error) {
         toast.error(`Oops! Something went wrong! ${error}`);
@@ -50,10 +59,11 @@ export class App extends Component {
     }
   }
 
-  handleLoadMore = () => {   
+  handleLoadMore = () => { 
       this.setState(prevState => ({
-        page: prevState.page + 1
-      }));
+        page: prevState.page + 1,
+      })  
+      )
     }
 
 
